@@ -16,8 +16,9 @@
 using namespace std;
 
 const int windowWidth = 1200;
-const int windowHeight = 800;
-const double refreshPerSecond = 0;
+const int windowHeight = 800 ;
+const double refreshPerSecond = 60  ;
+
 vector<vector<int>>level_map={
   {0,0,1,1,1,1,1,0},
   {1,1,1,0,5,0,1,0},
@@ -401,7 +402,7 @@ class MainWindow : public Fl_Window {
   }
   int handle(int event) override {
     switch (event) {
-      case FL_MOVE:    
+      case FL_MOVE: 
         canvas.mouseMove(Point{Fl::event_x(), Fl::event_y()});
         return 1;
       case FL_PUSH:
