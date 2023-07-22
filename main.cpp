@@ -17,7 +17,7 @@ using namespace std;
 
 const int windowWidth = 1200;
 const int windowHeight = 800;
-const double refreshPerSecond = 0;
+const double refreshPerSecond = 60;
 vector<vector<int>>level_map={
   {0,0,1,1,1,1,1,0},
   {1,1,1,0,5,0,1,0},
