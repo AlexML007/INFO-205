@@ -401,7 +401,7 @@ class MainWindow : public Fl_Window {
   }
   int handle(int event) override {
     switch (event) {
-      case FL_MOVE: 
+      case FL_MOVE:    
         canvas.mouseMove(Point{Fl::event_x(), Fl::event_y()});
         return 1;
       case FL_PUSH:
