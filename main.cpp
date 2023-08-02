@@ -12,13 +12,13 @@
 #include <iostream>
 #include <random>
 #include <array>
-
+//#include <conio.h> //for the getch() function
 using namespace std;
 
 const int windowWidth = 1200;
-const int windowHeight = 800 ;
-const double refreshPerSecond = 60  ;
-
+const int windowHeight = 800;
+const double refreshPerSecond = 60;
+// regarder pour les variable globales
 vector<vector<int>>level_map={
   {0,0,1,1,1,1,1,0},
   {1,1,1,0,5,0,1,0},
@@ -309,10 +309,58 @@ elsewhere it will probably crash.
 --------------------------------------------------*/
 
 
+/* 
+classe à devoir mettre dans player.cpp
+*/
+class Player{
+	int x, old_x = 1;
+	int y, old_y = 4;
+	public:
+		void walk_up(){}
+		void walk_right(){}
+		void walk_left(){}
+		void walk_down(){}
+		int get_old_x(){
+			return old_x;
+		}
+		int get_old_y(){
+			return old_y;
+		}
+		int get_x(){
+			return x;
+		}
+		int get_y(){
+			return y;
+		}
+		void set_x(const char * key){
+			old_x = x;
+			if (key == "z"){
+				x--;
+			}
+			else{
+				x++;
+			}
+		}
+		void set_y(const char * key){
+			old_y = y;
+			if (key == "q"){
+				y--;
+			}
+			
+			else{
+				y++;
+			}
+		
+		}
+
+};
+
 class Canvas {
   vector< vector<Cell> > cells;
   vector<Cell *> neighbors;
   void initialize();
+  Player player; // sans doute à devoir changer de place et à modifier
+  void start_game();
  public:
   Canvas(){
     initialize();
@@ -320,7 +368,7 @@ class Canvas {
   void draw();
   void mouseMove(Point mouseLoc);
   void mouseClick(Point mouseLoc);
-  void keyPressed(int keyCode);
+  void keyPressed(int keyCode); // doit être séparé du code de Sokoban
  
 };
 
@@ -370,15 +418,61 @@ void Canvas::mouseClick(Point mouseLoc) {
 }
 
 void Canvas::keyPressed(int keyCode) {
-  switch (keyCode) {
-    case 'q':
-      exit(0);
-    case ' ':
-    	initialize();  
-    default:
-    {} // pass
-  }
+	cout << "Please enter your keyboard key" << endl;
+	// rajouter les conditions pour les murs, objets et traiter le cas où l'on sortirait du plateau 
+	switch (keyCode) {
+		
+		case 'z':
+			player.set_x("z");
+		
+		case 'q':
+			player.set_y("q");
+			
+		case 's':
+			player.set_x("s");
+			
+		case 'd':
+			player.set_y("d");
+			
+		case 'e': // trouver autre solution pour 'e'sc
+			exit(0);
+			
+		default:
+			{cout <<"bad key!"<<endl;} // pass
+		
+	}
+	level_map[player.get_old_x()][player.get_old_y()] = 0;
+	level_map[player.get_x()][player.get_y()] = 5;
 }
+
+
+void Canvas::start_game(){
+	while(1){
+		/*
+		bool end_game = false;
+		while(!end_game){	
+		}
+		*/
+		while(1){
+			{} //pass
+		}
+		cout << "Do you want to replay? [y/n]";
+		char choice;
+		cin >> choice;
+		switch (choice){
+			case 'y':
+				{cout << "good choice" << endl;}
+			case 'n':
+				{cout << "goodbye!" <<endl;}
+				break;
+		}
+
+	}
+
+}
+	
+
+
 
 /*--------------------------------------------------
 
@@ -439,3 +533,17 @@ int main(int argc, char *argv[]) {
   window.show(argc, argv);
   return Fl::run();
 }
+
+
+
+/*
+Bibliograhie:
+	openclassrooms.com/forum/sujet/acquerir-la-touche-fleche-en-c-97853
+*/
+
+
+
+
+
+
+
