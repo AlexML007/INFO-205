@@ -239,8 +239,12 @@ class Cell {
   {
   	return type;
   }
-  
- 
+  int get_type(){
+  	return type;
+  }
+  void set_type(int new_type){
+  	type = new_type;
+  }
 };
 
 Cell::Cell(Point center, int w, int h,int cell_type):
@@ -313,8 +317,10 @@ elsewhere it will probably crash.
 classe à devoir mettre dans player.cpp
 */
 class Player{
-	int x, old_x = 1;
-	int y, old_y = 4;
+	int x = 1;
+	int old_x = 1;
+	int y = 4;
+	int old_y = 4;
 	public:
 		void walk_up(){}
 		void walk_right(){}
@@ -374,15 +380,15 @@ class Canvas {
 
 void Canvas::initialize() {
   cells.clear();
-  for (unsigned short x = 0; x < 8; x++) {
+  for (unsigned short x = 0; x < 9; x++) {
     cells.push_back({});
-    for (int y = 0; y < 9; y++){
-      cells[x].push_back({{63*x+63, 63*y+63}, 63, 63,level_map[y][x]});
+    for (int y = 0; y < 8; y++){
+      cells[x].push_back({{63*y+63, 63*x+63}, 63, 63,level_map[x][y]});
     
       }
   }
-  for (unsigned x = 0; x < 8; x++) {
-    for (unsigned y = 0; y < 9; y++){
+  for (unsigned x = 0; x < 9; x++) {
+    for (unsigned y = 0; y < 8; y++){
     		vector<Cell *> neighbors;
     		for (auto &shift:vector<Point>({{-1, -1},{-1, 0},{-1, 1},{0, -1},{0, 1},{1, -1},{1, 0}  ,{1, 1}}))
     		{
@@ -424,35 +430,42 @@ void Canvas::keyPressed(int keyCode) {
 		
 		case 'z':
 			player.set_x("z");
-		
+			cells[player.get_old_x()][player.get_old_y()].set_type(0);
+			cells[player.get_x()][player.get_y()].set_type(5);
+			break;
 		case 'q':
 			player.set_y("q");
-			
+			cells[player.get_old_x()][player.get_old_y()].set_type(0);
+			cells[player.get_x()][player.get_y()].set_type(5);
+			break;
 		case 's':
 			player.set_x("s");
-			
+			cells[player.get_old_x()][player.get_old_y()].set_type(0);
+			cells[player.get_x()][player.get_y()].set_type(5);
+			break;
 		case 'd':
-			player.set_y("d");
 			
+			player.set_y("d");
+			cells[player.get_old_x()][player.get_old_y()].set_type(0);
+			cells[player.get_x()][player.get_y()].set_type(5);
+			break;
 		case 'e': // trouver autre solution pour 'e'sc
 			exit(0);
 			
 		default:
 			{cout <<"bad key!"<<endl;} // pass
-		
+			break;
 	}
 	level_map[player.get_old_x()][player.get_old_y()] = 0;
 	level_map[player.get_x()][player.get_y()] = 5;
 }
-
-
+/*
 void Canvas::start_game(){
 	while(1){
-		/*
 		bool end_game = false;
 		while(!end_game){	
 		}
-		*/
+		
 		while(1){
 			{} //pass
 		}
@@ -470,7 +483,7 @@ void Canvas::start_game(){
 	}
 
 }
-	
+*/	
 
 
 
@@ -486,7 +499,7 @@ class MainWindow : public Fl_Window {
   Canvas canvas;
 
  public:
-  MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Lab 3") {
+  MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Sokoban") {
     Fl::add_timeout(1.0/refreshPerSecond, Timer_CB, this);
     resizable(this);
   }
@@ -504,6 +517,7 @@ class MainWindow : public Fl_Window {
         return 1;
       case FL_KEYDOWN:
         canvas.keyPressed(Fl::event_key());
+        cout<<"I am here"<< endl;
         return 1;
       default:
         return 0;
