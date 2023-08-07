@@ -14,6 +14,6 @@ class Player{
 		int get_y();
 		void set_x(int key);
 		void set_y(int key);
-
+		void set_old();
 };
 

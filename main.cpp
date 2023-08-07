@@ -320,11 +320,13 @@ class Canvas {
   vector<Cell *> neighbors;
   void initialize();
   Player player; // sans doute à devoir changer de place et à modifier
-  void start_game();
  public:
   Canvas(){
     initialize();
   }
+  bool check_move();
+  void set_type_cell();
+  void update_level_map();
   void draw();
   void mouseMove(Point mouseLoc);
   void mouseClick(Point mouseLoc);
@@ -383,25 +385,25 @@ void Canvas::keyPressed(int keyCode) {
 	switch (keyCode) {
 		
 		case 'z':
+			//if (check_move){
 			player.set_x(1);
-			cells[player.get_old_x()][player.get_old_y()].set_type(0);
-			cells[player.get_x()][player.get_y()].set_type(5);
+			set_type_cell();
+			update_level_map();
 			break;
 		case 'q':
 			player.set_y(2);
-			cells[player.get_old_x()][player.get_old_y()].set_type(0);
-			cells[player.get_x()][player.get_y()].set_type(5);
+			set_type_cell();
+			update_level_map();
 			break;
 		case 's':
 			player.set_x(3);
-			cells[player.get_old_x()][player.get_old_y()].set_type(0);
-			cells[player.get_x()][player.get_y()].set_type(5);
+			set_type_cell();
+			update_level_map();
 			break;
 		case 'd':
-			
 			player.set_y(4);
-			cells[player.get_old_x()][player.get_old_y()].set_type(0);
-			cells[player.get_x()][player.get_y()].set_type(5);
+			set_type_cell();
+			update_level_map();
 			break;
 		case 'e': // trouver autre solution pour 'e'sc
 			exit(0);
@@ -410,8 +412,21 @@ void Canvas::keyPressed(int keyCode) {
 			{cout <<"bad key!"<<endl;} // pass
 			break;
 	}
+}
+bool Canvas::check_move(){
+	{}
+}
+
+void Canvas::set_type_cell(){
+	cells[player.get_old_x()][player.get_old_y()].set_type(0);
+	cells[player.get_x()][player.get_y()].set_type(5);
+
+}
+
+void Canvas::update_level_map(){
 	level_map[player.get_old_x()][player.get_old_y()] = 0;
 	level_map[player.get_x()][player.get_y()] = 5;
+	cout << player.get_old_x()<< player.get_old_y()<<endl;
 }
 /*
 void Canvas::start_game(){
@@ -471,7 +486,6 @@ class MainWindow : public Fl_Window {
         return 1;
       case FL_KEYDOWN:
         canvas.keyPressed(Fl::event_key());
-        cout<<"I am here"<< endl;
         return 1;
       default:
         return 0;

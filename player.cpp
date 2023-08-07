@@ -39,6 +39,10 @@ void Player::set_y(int key){
 	}
 
 }
+void set_old(){
+	
+
+}
 
 
 
