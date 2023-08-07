@@ -12,6 +12,7 @@
 #include <iostream>
 #include <random>
 #include <array>
+#include "player.hpp"
 //#include <conio.h> //for the getch() function
 using namespace std;
 
@@ -313,53 +314,6 @@ elsewhere it will probably crash.
 --------------------------------------------------*/
 
 
-/* 
-classe à devoir mettre dans player.cpp
-*/
-class Player{
-	int x = 1;
-	int old_x = 1;
-	int y = 4;
-	int old_y = 4;
-	public:
-		void walk_up(){}
-		void walk_right(){}
-		void walk_left(){}
-		void walk_down(){}
-		int get_old_x(){
-			return old_x;
-		}
-		int get_old_y(){
-			return old_y;
-		}
-		int get_x(){
-			return x;
-		}
-		int get_y(){
-			return y;
-		}
-		void set_x(const char * key){
-			old_x = x;
-			if (key == "z"){
-				x--;
-			}
-			else{
-				x++;
-			}
-		}
-		void set_y(const char * key){
-			old_y = y;
-			if (key == "q"){
-				y--;
-			}
-			
-			else{
-				y++;
-			}
-		
-		}
-
-};
 
 class Canvas {
   vector< vector<Cell> > cells;
@@ -429,23 +383,23 @@ void Canvas::keyPressed(int keyCode) {
 	switch (keyCode) {
 		
 		case 'z':
-			player.set_x("z");
+			player.set_x(1);
 			cells[player.get_old_x()][player.get_old_y()].set_type(0);
 			cells[player.get_x()][player.get_y()].set_type(5);
 			break;
 		case 'q':
-			player.set_y("q");
+			player.set_y(2);
 			cells[player.get_old_x()][player.get_old_y()].set_type(0);
 			cells[player.get_x()][player.get_y()].set_type(5);
 			break;
 		case 's':
-			player.set_x("s");
+			player.set_x(3);
 			cells[player.get_old_x()][player.get_old_y()].set_type(0);
 			cells[player.get_x()][player.get_y()].set_type(5);
 			break;
 		case 'd':
 			
-			player.set_y("d");
+			player.set_y(4);
 			cells[player.get_old_x()][player.get_old_y()].set_type(0);
 			cells[player.get_x()][player.get_y()].set_type(5);
 			break;
