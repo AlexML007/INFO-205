@@ -385,25 +385,32 @@ void Canvas::keyPressed(int keyCode) {
 	switch (keyCode) {
 		
 		case 'z':
-			//if (check_move){
-			player.set_x(1);
-			set_type_cell();
-			update_level_map();
+			if (check_move){
+				player.set_x(1);
+				set_type_cell();
+				update_level_map();
+			}
 			break;
 		case 'q':
-			player.set_y(2);
-			set_type_cell();
-			update_level_map();
+			if (check_move){
+				player.set_y(2);
+				set_type_cell();
+				update_level_map();
+			}
 			break;
 		case 's':
-			player.set_x(3);
-			set_type_cell();
-			update_level_map();
+			if (check_move){
+				player.set_x(3);
+				set_type_cell();
+				update_level_map();
+			}
 			break;
 		case 'd':
-			player.set_y(4);
-			set_type_cell();
-			update_level_map();
+			if (check_move){
+				player.set_y(4);
+				set_type_cell();
+				update_level_map();
+			}
 			break;
 		case 'e': // trouver autre solution pour 'e'sc
 			exit(0);
@@ -414,7 +421,7 @@ void Canvas::keyPressed(int keyCode) {
 	}
 }
 bool Canvas::check_move(){
-	{}
+	if 
 }
 
 void Canvas::set_type_cell(){
