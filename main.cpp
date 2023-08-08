@@ -28,7 +28,7 @@ vector<vector<int>>level_map={
   {1,3,1,1,2,0,1,0},
   {1,0,1,0,3,0,1,1},
   {1,2,0,4,2,2,3,1},
-  {1,0,0,0,3,0,0,1},
+  {1,0,0,0,3,0,0,0},
   {1,1,1,1,1,1,1,1},
 
 };
@@ -246,6 +246,15 @@ class Cell {
   void set_type(int new_type){
   	type = new_type;
   }
+  vector<Cell *> get_neighbors(){
+  	return neighbors;
+  }
+  void set_target(){
+  	target = true;
+  }
+  bool is_target(){
+  	return target;
+  }
 };
 
 Cell::Cell(Point center, int w, int h,int cell_type):
@@ -324,7 +333,7 @@ class Canvas {
   Canvas(){
     initialize();
   }
-  bool check_move();
+  bool check_move(int x, int y);
   void set_type_cell();
   void update_level_map();
   void draw();
@@ -340,13 +349,15 @@ void Canvas::initialize() {
     cells.push_back({});
     for (int y = 0; y < 8; y++){
       cells[x].push_back({{63*y+63, 63*x+63}, 63, 63,level_map[x][y]});
-    
+    	if (cells[x][y].get_type() == 3){
+    		cells[x][y].set_target();
+    	}
       }
   }
   for (unsigned x = 0; x < 9; x++) {
     for (unsigned y = 0; y < 8; y++){
     		vector<Cell *> neighbors;
-    		for (auto &shift:vector<Point>({{-1, -1},{-1, 0},{-1, 1},{0, -1},{0, 1},{1, -1},{1, 0}  ,{1, 1}}))
+    		for (auto &shift:vector<Point>({{-1, 0},{0, -1},{0, 1},{1, 0}}))
     		{
     			if  ((x+shift.x>=0) and (x+shift.x)<cells.size() and (y+shift.y>=0)and (y+shift.y)<cells[x].size())
     			{	
@@ -385,28 +396,28 @@ void Canvas::keyPressed(int keyCode) {
 	switch (keyCode) {
 		
 		case 'z':
-			if (check_move){
+			if (check_move(-1, 0)){
 				player.set_x(1);
 				set_type_cell();
 				update_level_map();
 			}
 			break;
 		case 'q':
-			if (check_move){
+			if (check_move(0, -1)){
 				player.set_y(2);
 				set_type_cell();
 				update_level_map();
 			}
 			break;
 		case 's':
-			if (check_move){
+			if (check_move(1, 0)){
 				player.set_x(3);
 				set_type_cell();
 				update_level_map();
 			}
 			break;
 		case 'd':
-			if (check_move){
+			if (check_move(0, 1)){
 				player.set_y(4);
 				set_type_cell();
 				update_level_map();
@@ -420,21 +431,35 @@ void Canvas::keyPressed(int keyCode) {
 			break;
 	}
 }
-bool Canvas::check_move(){
-	if 
+bool Canvas::check_move(int x, int y){
+	if (cells[player.get_x() + x][player.get_y() + y].get_type() == 1){
+		return false;
+	}
+	if(player.get_x() + x < 0 or player.get_x() + x >= cells.size() or player.get_y() + y < 0 or player.get_y() + y >= cells[player.get_x()].size()) {
+		return false;
+	}
+	return true;
 }
 
 void Canvas::set_type_cell(){
-	cells[player.get_old_x()][player.get_old_y()].set_type(0);
+	if (cells[player.get_old_x()][player.get_old_y()].is_target()){
+		cells[player.get_old_x()][player.get_old_y()].set_type(3);
+	}
+	else{
+		cells[player.get_old_x()][player.get_old_y()].set_type(0);
+	}
 	cells[player.get_x()][player.get_y()].set_type(5);
-
+	
 }
+
 
 void Canvas::update_level_map(){
 	level_map[player.get_old_x()][player.get_old_y()] = 0;
 	level_map[player.get_x()][player.get_y()] = 5;
 	cout << player.get_old_x()<< player.get_old_y()<<endl;
 }
+
+
 /*
 void Canvas::start_game(){
 	while(1){
