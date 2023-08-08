@@ -27,7 +27,7 @@ vector<vector<int>>level_map={
   {1,1,1,0,2,3,1,0},
   {1,3,1,1,2,0,1,0},
   {1,0,1,0,3,0,1,1},
-  {1,2,0,4,2,2,3,1},
+  {1,2,0,0,2,2,3,1},
   {1,0,0,0,3,0,0,0},
   {1,1,1,1,1,1,1,1},
 
@@ -328,19 +328,20 @@ class Canvas {
   vector< vector<Cell> > cells;
   vector<Cell *> neighbors;
   void initialize();
+  int box_on_target = 0;
   Player player; // sans doute à devoir changer de place et à modifier
  public:
   Canvas(){
     initialize();
   }
   bool check_move(int x, int y);
-  void set_type_cell();
+  void set_type_cell(int get_x, int get_y, int get_old_x, int get_old_y, bool box_move=false);
   void update_level_map();
   void draw();
   void mouseMove(Point mouseLoc);
   void mouseClick(Point mouseLoc);
   void keyPressed(int keyCode); // doit être séparé du code de Sokoban
- 
+  void win_game();
 };
 
 void Canvas::initialize() {
@@ -398,29 +399,29 @@ void Canvas::keyPressed(int keyCode) {
 		case 'z':
 			if (check_move(-1, 0)){
 				player.set_x(1);
-				set_type_cell();
-				update_level_map();
+				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+				win_game();
 			}
 			break;
 		case 'q':
 			if (check_move(0, -1)){
 				player.set_y(2);
-				set_type_cell();
-				update_level_map();
+				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+				win_game();
 			}
 			break;
 		case 's':
 			if (check_move(1, 0)){
 				player.set_x(3);
-				set_type_cell();
-				update_level_map();
+				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+				win_game();
 			}
 			break;
 		case 'd':
 			if (check_move(0, 1)){
 				player.set_y(4);
-				set_type_cell();
-				update_level_map();
+				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+				win_game();
 			}
 			break;
 		case 'e': // trouver autre solution pour 'e'sc
@@ -438,27 +439,52 @@ bool Canvas::check_move(int x, int y){
 	if(player.get_x() + x < 0 or player.get_x() + x >= cells.size() or player.get_y() + y < 0 or player.get_y() + y >= cells[player.get_x()].size()) {
 		return false;
 	}
+	if((cells[player.get_x() + x][player.get_y() + y].get_type() == 4) or (cells[player.get_x() + x][player.get_y() + y].get_type() == 2)){
+		if ((cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 0) or (cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 3)){
+			set_type_cell(player.get_x() + x, player.get_y() + y, player.get_x() + 2 * x, player.get_y() + 2 * y, true);
+		}
+		else{
+			return false;
+		}
+	}	
+	
 	return true;
 }
 
-void Canvas::set_type_cell(){
-	if (cells[player.get_old_x()][player.get_old_y()].is_target()){
-		cells[player.get_old_x()][player.get_old_y()].set_type(3);
+void Canvas::set_type_cell(int get_x, int get_y, int get_old_x, int get_old_y, bool box_move){
+	if (box_move){
+		if (cells[get_old_x][get_old_y].get_type() == 3){
+			cells[get_old_x][get_old_y].set_type(4);
+			box_on_target++;
+		}
+		else{	
+			if (cells[get_x][get_y].get_type() == 4){box_on_target--;}
+			cells[get_old_x][get_old_y].set_type(2);
+		}
+		cells[get_x][get_y].set_type(0);
 	}
 	else{
-		cells[player.get_old_x()][player.get_old_y()].set_type(0);
+		if (cells[get_old_x][get_old_y].is_target()){
+			cells[get_old_x][get_old_y].set_type(3);
+		}
+		else{
+			cells[get_old_x][get_old_y].set_type(0);
+		}
+		cells[get_x][get_y].set_type(5);
 	}
-	cells[player.get_x()][player.get_y()].set_type(5);
-	
 }
-
-
+/*
 void Canvas::update_level_map(){
 	level_map[player.get_old_x()][player.get_old_y()] = 0;
 	level_map[player.get_x()][player.get_y()] = 5;
 	cout << player.get_old_x()<< player.get_old_y()<<endl;
 }
-
+*/
+void Canvas::win_game(){cout << box_on_target<< endl; 
+	if (box_on_target == 6){
+		exit(0);
+	}
+}
 
 /*
 void Canvas::start_game(){
