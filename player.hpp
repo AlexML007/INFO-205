@@ -17,5 +17,7 @@ class Player{
 		void set_x(int key);
 		void set_y(int key);
 		void set_old(int key);
+		void reinitialise_process_set(int i, int j);
+		void reinitialize();
 };
 

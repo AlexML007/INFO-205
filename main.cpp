@@ -20,19 +20,6 @@ const int windowWidth = 1200;
 const int windowHeight = 800;
 const double refreshPerSecond = 60;
 // regarder pour les variable globales
-vector<vector<int>>level_map={
-  {0,0,1,1,1,1,1,0},
-  {1,1,1,0,5,0,1,0},
-  {1,3,0,2,0,0,1,0},
-  {1,1,1,0,2,3,1,0},
-  {1,3,1,1,2,0,1,0},
-  {1,0,1,0,3,0,1,1},
-  {1,2,0,0,2,2,3,1},
-  {1,0,0,0,3,0,0,0},
-  {1,1,1,1,1,1,1,1},
-
-};
-
 struct Point {
   int x, y;
 };
@@ -124,7 +111,7 @@ class Rectangle {
   void draw_player();
   void draw_box_ok();
   void draw_target();
-
+  void draw_teleportation();
   void setFillColor(Fl_Color newFillColor);
   Fl_Color getFillColor() {
     return fillColor;
@@ -156,6 +143,12 @@ Rectangle::Rectangle(Point center, int w, int h,
                      Fl_Color fillColor):
   center{center}, w{w}, h{h}, fillColor{fillColor}, frameColor{frameColor} {}
 
+void Rectangle::draw_teleportation(){
+  Fl_PNG_Image png_g("ground.png");
+  png_g.draw(center.x-w/2, center.y-h/2, w, h);
+  Fl_PNG_Image png("teleportation.png");
+  png.draw(center.x-w/2, center.y-h/2, w, h);		
+}
 void Rectangle::draw_ground() {
   Fl_PNG_Image png("ground.png");
   png.draw(center.x-w/2, center.y-h/2, w, h);
@@ -224,6 +217,7 @@ class Cell {
   bool wall=false;
   bool target=false;
   bool player_in=false;
+  bool teleportation=false;
   vector<Cell *> neighbors;
   Text neighbor_bomb_count;
   
@@ -236,9 +230,11 @@ class Cell {
   void mouseMove(Point mouseLoc);
   void mouseClick(Point mouseLoc);
   void set_neighbors(vector<Cell *> new_neighbors);
-  bool is_type()
-  {
-  	return type;
+  void set_teleportation(){
+  	teleportation = true;
+  }
+  bool is_teleportation(){
+  	return teleportation;
   }
   int get_type(){
   	return type;
@@ -273,6 +269,9 @@ void Cell::draw() {
   else if (type==2){
     r.draw_box();
   }
+  else if (type==3){
+    r.draw_target();
+    }
   else if (type==4)
   {
     r.draw_box_ok();
@@ -281,8 +280,8 @@ void Cell::draw() {
   {
     r.draw_player();
   }          
-  else {
-    r.draw_target();
+  else{
+    r.draw_teleportation();
     }
   
 }
@@ -325,8 +324,20 @@ elsewhere it will probably crash.
 
 
 class Canvas {
+  vector<vector<int>>level_map={
+  {0,0,1,1,1,1,1,0},
+  {1,1,1,0,5,0,1,0},
+  {1,3,6,2,0,0,1,0},
+  {1,1,1,0,2,3,1,0},
+  {1,3,1,1,2,0,1,0},
+  {1,0,1,0,3,0,1,1},
+  {1,2,0,0,2,2,3,1},
+  {1,0,0,6,3,0,0,0},
+  {1,1,1,1,1,1,1,1}
+
+};
+  vector<Point> teleportation_boxes;
   vector< vector<Cell> > cells;
-  vector<Cell *> neighbors;
   void initialize();
   int box_on_target = 0;
   Player player; // sans doute à devoir changer de place et à modifier
@@ -336,15 +347,16 @@ class Canvas {
   }
   bool check_move(int x, int y);
   void set_type_cell(int get_x, int get_y, int get_old_x, int get_old_y, bool box_move=false);
-  void update_level_map();
   void draw();
   void mouseMove(Point mouseLoc);
   void mouseClick(Point mouseLoc);
   void keyPressed(int keyCode); // doit être séparé du code de Sokoban
   void win_game();
+  bool teleportation_ok(int delta_x, int delta_y);
 };
 
 void Canvas::initialize() {
+  box_on_target = 0;
   cells.clear();
   for (unsigned short x = 0; x < 9; x++) {
     cells.push_back({});
@@ -353,22 +365,12 @@ void Canvas::initialize() {
     	if (cells[x][y].get_type() == 3){
     		cells[x][y].set_target();
     	}
+    	else if(cells[x][y].get_type() == 6){
+    		teleportation_boxes.push_back(Point(x, y));
+    		cells[x][y].set_teleportation();
+    	}
       }
   }
-  for (unsigned x = 0; x < 9; x++) {
-    for (unsigned y = 0; y < 8; y++){
-    		vector<Cell *> neighbors;
-    		for (auto &shift:vector<Point>({{-1, 0},{0, -1},{0, 1},{1, 0}}))
-    		{
-    			if  ((x+shift.x>=0) and (x+shift.x)<cells.size() and (y+shift.y>=0)and (y+shift.y)<cells[x].size())
-    			{	
-    				neighbors.push_back(&cells[x+shift.x][y+shift.y]);
-    			}
-    		}
-    	cells[x][y].set_neighbors(neighbors);
-    	}
-    }
-  
 }
 
 
@@ -398,35 +400,58 @@ void Canvas::keyPressed(int keyCode) {
 		
 		case 'z':
 			if (check_move(-1, 0)){
-				player.set_x(1);
-				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
-				win_game();
+				if (teleportation_ok(-1, 0)){
+					{};
+				}
+				else{
+					player.set_x(1);
+					set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+					win_game();
+				}
 			}
 			break;
 		case 'q':
 			if (check_move(0, -1)){
-				player.set_y(2);
-				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
-				win_game();
+				if (teleportation_ok(0, -1)){
+					{};
+				}
+				else{
+					player.set_y(2);
+					set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+					win_game();
+				}
 			}
 			break;
 		case 's':
 			if (check_move(1, 0)){
-				player.set_x(3);
-				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
-				win_game();
+				if (teleportation_ok(1, 0)){		
+					{};
+				}
+				else{
+					player.set_x(3);
+					set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+					win_game();
+				}
 			}
 			break;
 		case 'd':
 			if (check_move(0, 1)){
-				player.set_y(4);
-				set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
-				win_game();
+				if (teleportation_ok(0, 1)){
+					{};
+				}
+				else{
+					player.set_y(4);
+					set_type_cell(player.get_x(), player.get_y(), player.get_old_x(), player.get_old_y());
+					win_game();
+				}
 			}
 			break;
 		case 'e': // trouver autre solution pour 'e'sc
 			exit(0);
 			
+		case 'r':
+			initialize();
+			player.reinitialize();
 		default:
 			{cout <<"bad key!"<<endl;} // pass
 			break;
@@ -440,32 +465,86 @@ bool Canvas::check_move(int x, int y){
 		return false;
 	}
 	if((cells[player.get_x() + x][player.get_y() + y].get_type() == 4) or (cells[player.get_x() + x][player.get_y() + y].get_type() == 2)){
-		if ((cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 0) or (cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 3)){
+		if ((cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 0) or (cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 3) or (cells[player.get_x() + 2 * x][player.get_y() + 2 * y].get_type() == 6)){
 			set_type_cell(player.get_x() + x, player.get_y() + y, player.get_x() + 2 * x, player.get_y() + 2 * y, true);
 		}
 		else{
 			return false;
 		}
 	}	
-	
 	return true;
+}
+
+bool Canvas::teleportation_ok(int delta_x, int delta_y){
+	vector <Point> stack;
+	for(auto teleportation_point = teleportation_boxes.begin(); teleportation_point != teleportation_boxes.end(); ++teleportation_point){
+		if (teleportation_point->x == player.get_x() + delta_x and teleportation_point->y == player.get_y() + delta_y){
+			if (teleportation_point == teleportation_boxes.begin()){
+				if (cells[teleportation_boxes[1].x][teleportation_boxes[1].y].get_type() == 6){
+					cells[teleportation_boxes[1].x][teleportation_boxes[1].y].set_type(5);
+					cells[player.get_x()][player.get_y()].set_type(0);
+					player.reinitialise_process_set(teleportation_boxes[1].x, teleportation_boxes[1].y);
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+			else{
+				if (cells[teleportation_boxes[0].x][teleportation_boxes[0].y].get_type() == 6){
+					cells[teleportation_boxes[0].x][teleportation_boxes[0].y].set_type(5);
+					cells[player.get_x()][player.get_y()].set_type(0);
+					cout << "ici2" << endl;
+					player.reinitialise_process_set(teleportation_boxes[0].x, teleportation_boxes[0].y);
+					return true;
+				}
+				else{
+					return false;
+				}
+			}		
+		}
+	}
+	return false;
 }
 
 void Canvas::set_type_cell(int get_x, int get_y, int get_old_x, int get_old_y, bool box_move){
 	if (box_move){
+	cout << get_x << get_y << endl;
 		if (cells[get_old_x][get_old_y].get_type() == 3){
 			cells[get_old_x][get_old_y].set_type(4);
 			box_on_target++;
+			if (cells[get_x][get_y].is_teleportation()){
+				cells[get_x][get_y].set_type(6);
+			}
+			else{
+				cells[get_x][get_y].set_type(0);	
+			}
 		}
 		else{	
-			if (cells[get_x][get_y].get_type() == 4){box_on_target--;}
+			cout << get_x << get_y << endl;
+			if (cells[get_x][get_y].get_type() == 4){
+				box_on_target--;
+			}
+			if(cells[get_x][get_y].is_teleportation()){
+				cells[get_x][get_y].set_type(6);
+				cout << "ici1" << endl;
+			}
+			/*
+			else{
+				cells[get_x][get_y].set_type(0);
+			}
+			*/
+			
 			cells[get_old_x][get_old_y].set_type(2);
 		}
-		cells[get_x][get_y].set_type(0);
+		//cells[get_x][get_y].set_type(0);
 	}
 	else{
 		if (cells[get_old_x][get_old_y].is_target()){
 			cells[get_old_x][get_old_y].set_type(3);
+		}
+		else if(cells[get_old_x][get_old_y].is_teleportation()){
+			cells[get_old_x][get_old_y].set_type(6);
 		}
 		else{
 			cells[get_old_x][get_old_y].set_type(0);
@@ -473,14 +552,8 @@ void Canvas::set_type_cell(int get_x, int get_y, int get_old_x, int get_old_y, b
 		cells[get_x][get_y].set_type(5);
 	}
 }
-/*
-void Canvas::update_level_map(){
-	level_map[player.get_old_x()][player.get_old_y()] = 0;
-	level_map[player.get_x()][player.get_y()] = 5;
-	cout << player.get_old_x()<< player.get_old_y()<<endl;
-}
-*/
-void Canvas::win_game(){cout << box_on_target<< endl; 
+
+void Canvas::win_game(){
 	if (box_on_target == 6){
 		exit(0);
 	}

@@ -20,6 +20,22 @@ int Player::get_x(){
 int Player::get_y(){
 	return y;
 }
+void Player::reinitialize(){
+	 x = 1;
+ 	 old_x = 1; 
+ 	 y = 4; 
+ 	 old_y = 4;
+ 	 penultimate_blow = 5;
+ 	 number_of_steps = 0;
+}	
+void Player::reinitialise_process_set(int i, int j){
+	 x = i;
+	 old_x = i; 
+	 y = j; 
+	 old_y = j;
+	 penultimate_blow = 5;
+	 number_of_steps = 0;
+}
 void Player::set_x(int key){
 	set_old(key);
 	if (key == 1){
